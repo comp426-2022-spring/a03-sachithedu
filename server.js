@@ -1,57 +1,63 @@
 // Require Express.js
-const express = require("express");
+const express = require('express');
 const app = express();
-const args = require("minimist")(process.argv.slice(2));
-args["port"];
-const port = args.port || process.env.PORT || 5555;
+
+const args = require("minimist")(process.argv.slice(2))
+args["port"]
+const port = args.port || process.env.PORT || 5000
 
 // Start an app server
 const server = app.listen(port, () => {
-    console.log('App listening on port %PORT%'.replace('%PORT%',port));
-});
-
-// Default response for any other request
-app.use(function(req, res){
-    res.status(404).send('404 NOT FOUND')
+  console.log('App listening on port %PORT%'.replace('%PORT%',port))
 });
 
 // Check endpoint
 app.get('/app/', (req, res) => {
-    // Respond with status 200
-        res.statusCode = 200;
-    // Respond with status message "OK"
-        res.statusMessage = 'OK';
-        res.writeHead(res.statusCode, { 'Content-Type' : 'text/plain' });
-        res.end(res.statusCode+ ' ' +res.statusMessage)
+  // Respond with status 200
+  res.statusCode = 200;
+  // Respond with status message "OK"
+  res.statusMessage = 'OK';
+  res.writeHead( res.statusCode, { 'Content-Type' : 'text/plain' });
+  res.end(res.statusCode+ ' ' +res.statusMessage)
 });
 
 // Multiple flips endpoint
+app.get('/app/flip/call/heads', (req, res) => {
+  const result = flipACoin('heads');
+  res.status(200).json({
+      result
+  })
+});
+
+app.get('/app/flip/call/tails', (req, res) => {
+  const result = flipACoin('tails');
+  res.status(200).json({
+      result
+  })
+});
+
+// Flip Enpoints
 app.get('/app/flips/:number', (req, res) => {
-    let num = parseInt(req.params.number);
-    let flips = coinFlips(num);
-    let count = countFlips(flips);
-    let out = {raw: flips, summary: count};
-
-    res.status(200).json(out);
+  var num = req.params.number;
+  const flips = coinFlips(num);
+  const results = countFlips(flips);
+  res.status(200).json({
+      "raw": flips,
+      "summary": results
+  })
 });
-
-// Single flip endpoint
 app.get('/app/flip/', (req, res) => {
-	const result = coinFlip();
-    const out = {flip: result};
-
-    res.status(200).json(out);
+  var result = coinFlip();
+  res.status(200).json({
+      "flip": result
+  })
 });
 
-// Guess flip endpoint
-app.get('/app/flip/call/:call', (req, res) => {
-    const call = req.params.call;
-    const out = flipACoin(call);
-
-    res.status(200).json(out);
+// Default 
+app.use(function(req, res){
+  res.status(404).send('404 NOT FOUND')
 });
 
-// Coin funcs
 function coinFlip() {
     return Math.floor(Math.random() * 2) == 0 ? "heads" : "tails"
   }
